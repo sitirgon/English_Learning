@@ -55,14 +55,14 @@ def AddNewWord():
         VALUES (?,1,?,?,?)''',
         (word, 'NIE', data_repeat, data_creation))
     sql.con.commit()
-    IDWords = sql.cur.execute('select ID from Words where word = ?', (word,))
-    IDWords = IDWords.fetchall()
+    idWords = sql.cur.execute('select ID from Words where word = ?', (word,))
+    idWords = idWords.fetchall()
     for k in definition:
         sql.cur.execute('''INSERT INTO Definitions (
         IDWords,
         Definition)
         VALUES (?,?)''',
-        (IDWords[-1][-1], k))
+        (idWords[-1][-1], k))
         sql.con.commit()
     os.system('cls')
     print('Słowo dodano pomyślnie.')
