@@ -1,16 +1,17 @@
 import datetime
-import sqlite3, os
+import sqlite3
+import os
 import time
 from datetime import date
 
-class ConnectBase:
 
+class ConnectBase:
     def __init__(self):
         self.con = sqlite3.connect('Dict.db')
         self.cur = self.con.cursor()
         self.cur_update = self.con.cursor()
         try:
-            #base config
+            # base config
             self.cur.execute('''CREATE TABLE Words(
                             ID INTEGER PRIMARY KEY,
                             Word VARCHAR(50),
@@ -27,7 +28,8 @@ class ConnectBase:
         except sqlite3.OperationalError:
             pass
 
-def AddNewWord():
+
+def add_new_word():
     definition = []
     os.system('cls')
     print('Dodaj nowe słowo')
@@ -68,7 +70,8 @@ def AddNewWord():
     print('Słowo dodano pomyślnie.')
     os.system('pause')
 
-def RepeatWord():
+
+def repeat_word():
     os.system('cls')
     day = 86_400
     select = sql.cur.execute('select Word, Definition, CountRepeatCorrect, RepeatDate, id from words order by RANDOM()')
@@ -118,7 +121,8 @@ def RepeatWord():
         elif answer == 'nie':
             return
 
-def CrashTest():
+
+def crash_test():
     while True:
         os.system('cls')
         select = sql.cur.execute("SELECT word, definition, crashtest, id FROM WORDS WHERE CRASHTEST = 'NIE' ORDER BY RANDOM()")
@@ -159,8 +163,7 @@ def CrashTest():
                             continue
 
 
-
-def ViewDB():
+def view_db():
     os.system('cls')
     print('Przegląd bazy...')
     up = '# ID ####### Słowo ########## In English ##### Licznik ## Data Wpisu ## Data Powtórki #'
@@ -172,7 +175,7 @@ def ViewDB():
     os.system('pause')
 
 
-def RemoveWord():
+def remove_word():
     os.system('cls')
     print('Usuwanie słowa...')
     removeWord = input('Podaj ID słówka do usunięcia: ')
@@ -202,22 +205,21 @@ def main():
 
         match choose:
             case '1':
-                AddNewWord()
+                add_new_word()
             case '2':
-                RepeatWord()
+                repeat_word()
             case '3':
-                CrashTest()
+                crash_test()
             case '4':
-                ViewDB()
+                view_db()
             case '5':
-                RemoveWord()
+                remove_word()
             case '0':
                 print('Wyjście...')
                 break
             case _:
                 print('Wyjście...')
                 break
-
 
 
 if __name__ == '__main__':
