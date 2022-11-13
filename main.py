@@ -20,10 +20,13 @@ class ConnectBase:
                             CrashTest VARCHAR(3),
                             RepeatDate DATE,
                             CreationDate DATE)''')
-            self.con.commit()
             self.cur.execute('''CREATE TABLE Definitions(
+                            ID INTEGER PRIMARY KEY,
                             IDWords INTEGER,
                             Definition VARCHAR(50))''')
+            self.cur.execute('''CREATE TABLE Context(
+                            IDDefinitions INTEGER,
+                            Context_Definition VARCHAR(50))''')
             self.con.commit()
         except sqlite3.OperationalError:
             pass
@@ -34,7 +37,7 @@ def add_new_word():
     os.system('cls')
     print('Dodaj nowe słowo')
     word = input('Słowo: ')
-    checkWord = sql.con.execute('SELECT Word FROM Words WHERE Word = ?', (word,))
+    checkWord = sql.cur.execute('SELECT Word FROM Words WHERE Word = ?', (word,))
     checkWord = checkWord.fetchall()
     if not checkWord:
         i = 1
@@ -75,7 +78,7 @@ def add_new_definition():
     os.system('cls')
     print('Dodaj nową definicję do istniejącego słowa')
     word = input('Podaj słowo: ')
-    wordCheck = sql.con.execute('SELECT Word FROM Words WHERE Word = ?', (word,))
+    wordCheck = sql.cur.execute('SELECT Word FROM Words WHERE Word = ?', (word,))
     wordCheck = wordCheck.fetchall()
     if wordCheck:
         i = 1
