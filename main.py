@@ -60,21 +60,40 @@ def add_new_word():
             VALUES (?,1,?,?,?)''',
             (word, 'NIE', data_repeat, data_creation))
         sql.con.commit()
-        idWords = sql.cur.execute('select ID from Words where word = ?', (word,))
-        idWords = idWords.fetchall()
-        for k in definition:
-            sql.cur.execute('''INSERT INTO Definitions (
-            IDWords,
-            Definition)
-            VALUES (?,?)''',
-            (idWords[0][0], k))
-            sql.con.commit()
+        add_new_definition_loop(word, definition)
         os.system('cls')
         print('Słowo dodano pomyślnie.')
         os.system('pause')
     elif checkWord:
         os.system('cls')
         print('Słowo już zostało dodane, jeżeli chcesz dodać nową definicje tego słowa użyj innej funkcji.')
+        os.system('pause')
+
+
+def add_new_definition():
+    definition = []
+    os.system('cls')
+    print('Dodaj nową definicję do istniejącego słowa')
+    word = input('Podaj słowo: ')
+    wordCheck = sql.con.execute('SELECT Word FROM Words WHERE Word = ?', (word,))
+    wordCheck = wordCheck.fetchall()
+    if wordCheck:
+        i = 1
+        while True:
+            notEmpty = input(f'Znaczenie {i}: ')
+            if notEmpty != '':
+                definition.append(notEmpty)
+            elif notEmpty == '':
+                break
+            i += 1
+        print('Dodawanie znaczeń')
+        add_new_definition_loop(word, definition)
+        os.system('cls')
+        print('Znaczenie dodano pomyślnie')
+        os.system('pause')
+    elif not wordCheck:
+        os.system('cls')
+        print('Podane słowo nie istnieje')
         os.system('pause')
 
 
@@ -202,15 +221,28 @@ def remove_word():
     os.system('pause')
 
 
+def add_new_definition_loop(word, definition):
+    idWords = sql.cur.execute('select ID from Words where word = ?', (word,))
+    idWords = idWords.fetchall()
+    for k in definition:
+        sql.cur.execute('''INSERT INTO Definitions (
+                IDWords,
+                Definition)
+                VALUES (?,?)''',
+                        (idWords[0][0], k))
+        sql.con.commit()
+
+
 def main():
     while True:
         os.system('cls')
         print('''Witam w programie
 1.Dodaj nowe słowo
-2.Powtórka słów
-3.Crash test
-4.Przegląd bazy słówek
-5.Usuwanie słówka
+2.Dodaj nowe znaczenie
+3.Powtórka słów
+4.Crash test
+5.Przegląd bazy słówek
+6.Usuwanie słówka
 0.Wyjście''')
 
         choose = input('Wybierz opcje: ')
@@ -219,12 +251,14 @@ def main():
             case '1':
                 add_new_word()
             case '2':
-                repeat_word()
+                add_new_definition()
             case '3':
-                crash_test()
+                repeat_word()
             case '4':
-                view_db()
+                crash_test()
             case '5':
+                view_db()
+            case '6':
                 remove_word()
             case '0':
                 print('Wyjście...')
