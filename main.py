@@ -34,41 +34,48 @@ def add_new_word():
     os.system('cls')
     print('Dodaj nowe słowo')
     word = input('Słowo: ')
-    i = 1
-    while True:
-        notEmpty = input(f'Znaczenie {i}: ')
-        if notEmpty != '':
-            definition.append(notEmpty)
-        elif notEmpty == '':
-            break
-        i += 1
-    os.system('cls')
-    print('Dodaje nowe słowo...')
-    time.sleep(1)
-    data_creation = date.fromtimestamp(time.time())
-    data_repeat = date.fromtimestamp(time.time() + 86_400)
-    sql.cur.execute(
-        '''INSERT INTO Words (
-        Word, 
-        CountRepeatCorrect, 
-        CrashTest, 
-        RepeatDate, 
-        CreationDate) 
-        VALUES (?,1,?,?,?)''',
-        (word, 'NIE', data_repeat, data_creation))
-    sql.con.commit()
-    idWords = sql.cur.execute('select ID from Words where word = ?', (word,))
-    idWords = idWords.fetchall()
-    for k in definition:
-        sql.cur.execute('''INSERT INTO Definitions (
-        IDWords,
-        Definition)
-        VALUES (?,?)''',
-        (idWords[-1][-1], k))
+    checkWord = sql.con.execute('SELECT Word FROM Words WHERE Word = ?', (word,))
+    checkWord = checkWord.fetchall()
+    if not checkWord:
+        i = 1
+        while True:
+            notEmpty = input(f'Znaczenie {i}: ')
+            if notEmpty != '':
+                definition.append(notEmpty)
+            elif notEmpty == '':
+                break
+            i += 1
+        os.system('cls')
+        print('Dodaje nowe słowo...')
+        time.sleep(1)
+        data_creation = date.fromtimestamp(time.time())
+        data_repeat = date.fromtimestamp(time.time() + 86_400)
+        sql.cur.execute(
+            '''INSERT INTO Words (
+            Word, 
+            CountRepeatCorrect, 
+            CrashTest, 
+            RepeatDate, 
+            CreationDate) 
+            VALUES (?,1,?,?,?)''',
+            (word, 'NIE', data_repeat, data_creation))
         sql.con.commit()
-    os.system('cls')
-    print('Słowo dodano pomyślnie.')
-    os.system('pause')
+        idWords = sql.cur.execute('select ID from Words where word = ?', (word,))
+        idWords = idWords.fetchall()
+        for k in definition:
+            sql.cur.execute('''INSERT INTO Definitions (
+            IDWords,
+            Definition)
+            VALUES (?,?)''',
+            (idWords[0][0], k))
+            sql.con.commit()
+        os.system('cls')
+        print('Słowo dodano pomyślnie.')
+        os.system('pause')
+    elif checkWord:
+        os.system('cls')
+        print('Słowo już zostało dodane, jeżeli chcesz dodać nową definicje tego słowa użyj innej funkcji.')
+        os.system('pause')
 
 
 def repeat_word():
@@ -168,7 +175,12 @@ def view_db():
     print('Przegląd bazy...')
     up = '# ID ####### Słowo ########## In English ##### Licznik ## Data Wpisu ## Data Powtórki #'
     print(up)
-    a = sql.cur.execute('SELECT * FROM Words')
+    a = sql.cur.execute('''
+    SELECT 
+        * 
+    FROM 
+        Words
+        ''')
     for i in a:
         print(f'# {i[0]}  ## {i[1]}'+' '*(15-len(i[1]))+f' ## {i[2]}'+' '*(15-len(i[2]))+f' ## {i[3]}'+' '*(8-len(str(i[3])))+f' ## {i[6]} ## {i[5]}    #')
     print('#'*len(up))
@@ -181,8 +193,8 @@ def remove_word():
     removeWord = input('Podaj ID słówka do usunięcia: ')
     os.system('cls')
     print('Trwa usuwanie...')
-    sql.cur.execute('DELETE FROM Words WHERE ID = ?', (removeWord, ))
-    sql.cur.execute('DELETE FROM Definitions WHERE IDWords = ?', (removeWord, ))
+    sql.cur.execute('DELETE FROM Words WHERE ID = ?', (removeWord,))
+    sql.cur.execute('DELETE FROM Definitions WHERE IDWords = ?', (removeWord,))
     sql.con.commit()
     time.sleep(1)
     os.system('cls')
