@@ -15,7 +15,6 @@ class ConnectBase:
             self.cur.execute('''CREATE TABLE Words(
                             ID INTEGER PRIMARY KEY,
                             Word VARCHAR(50),
-                            IDWord INTEGER,
                             CountRepeatCorrect INTEGER,
                             CrashTest VARCHAR(3),
                             RepeatDate DATE,
@@ -84,12 +83,25 @@ def add_new_definition():
         i = 1
         while True:
             notEmpty = input(f'Znaczenie {i}: ')
-            if notEmpty != '':
+            checkDefinition = sql.cur.execute('''
+                                            SELECT 
+                                                Definition
+                                            FROM 
+                                                Words W
+                                                LEFT JOIN Definitions D on D.IDWords = W.ID
+                                            WHERE 
+                                                W.Word = ?
+                                                AND D.Definition = ?''',
+                                            (word, notEmpty))
+            checkDefinition = checkDefinition.fetchall()
+            if checkDefinition:
+                print('Do odanego słowa definicja jest przypisana')
+                continue
+            elif notEmpty != '':
                 definition.append(notEmpty)
             elif notEmpty == '':
                 break
             i += 1
-        print('Dodawanie znaczeń')
         add_new_definition_loop(word, definition)
         os.system('cls')
         print('Znaczenie dodano pomyślnie')
