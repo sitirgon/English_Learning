@@ -47,6 +47,7 @@ def add_new_word():
             elif notEmpty == '':
                 break
             i += 1
+        word_context = input('Kontekst definicji: ')
         os.system('cls')
         print('Dodaje nowe słowo...')
         time.sleep(1)
@@ -62,7 +63,7 @@ def add_new_word():
             VALUES (?,1,?,?,?)''',
             (word, 'NIE', data_repeat, data_creation))
         sql.con.commit()
-        add_new_definition_loop(word, definition)
+        add_new_definition_loop(word, definition, word_context)
         os.system('cls')
         print('Słowo dodano pomyślnie.')
         os.system('pause')
@@ -102,7 +103,8 @@ def add_new_definition():
             elif notEmpty == '':
                 break
             i += 1
-        add_new_definition_loop(word, definition)
+        word_context = input('Kontekst definicji: ')
+        add_new_definition_loop(word, definition, word_context)
         os.system('cls')
         print('Znaczenie dodano pomyślnie')
         os.system('pause')
@@ -227,8 +229,11 @@ def remove_word():
     removeWord = input('Podaj ID słówka do usunięcia: ')
     os.system('cls')
     print('Trwa usuwanie...')
-    sql.cur.execute('DELETE FROM Words WHERE ID = ?', (removeWord,))
+    context = sql.cur.execute('SELECT ID FROM DEFINITIONS WHERE IDWORDS = ?', (removeWord,))
+    context = context.fetchall()
+    sql.cur.execute('DELETE FROM CONTEXT WHERE IDDefinitions = ?', (context[0][0],))
     sql.cur.execute('DELETE FROM Definitions WHERE IDWords = ?', (removeWord,))
+    sql.cur.execute('DELETE FROM Words WHERE ID = ?', (removeWord,))
     sql.con.commit()
     time.sleep(1)
     os.system('cls')
@@ -236,7 +241,7 @@ def remove_word():
     os.system('pause')
 
 
-def add_new_definition_loop(word, definition):
+def add_new_definition_loop(word, definition, word_context):
     idWords = sql.cur.execute('select ID from Words where word = ?', (word,))
     idWords = idWords.fetchall()
     for k in definition:
@@ -246,6 +251,18 @@ def add_new_definition_loop(word, definition):
                 VALUES (?,?)''',
                         (idWords[0][0], k))
         sql.con.commit()
+        add_context(k, word_context)
+
+
+def add_context(definition, word_context):
+    idDefinition = sql.cur.execute('select ID from Definitions where Definition = ?', (definition,))
+    idDefinition = idDefinition.fetchall()
+    sql.cur.execute(''' INSERT INTO Context (
+                        IDDefinitions,
+                        Context_definition)
+                        VALUES (?,?)''',
+                                (idDefinition[0][0], word_context))
+    sql.con.commit()
 
 
 def main():
