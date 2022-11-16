@@ -32,7 +32,7 @@ class ConnectBase:
 
 
 def add_new_word():
-    definition = []
+    definition = []; context_list = []
     os.system('cls')
     print('Dodaj nowe słowo')
     word = input('Słowo: ')
@@ -44,10 +44,14 @@ def add_new_word():
             notEmpty = input(f'Znaczenie {i}: ')
             if notEmpty != '':
                 definition.append(notEmpty)
+                context = input(f'Kontekst {i}:')
+                if context != '':
+                    context_list.append(context)
+                elif context == '':
+                    continue
             elif notEmpty == '':
                 break
             i += 1
-        word_context = input('Kontekst definicji: ')
         os.system('cls')
         print('Dodaje nowe słowo...')
         time.sleep(1)
@@ -63,7 +67,7 @@ def add_new_word():
             VALUES (?,1,?,?,?)''',
             (word, 'NIE', data_repeat, data_creation))
         sql.con.commit()
-        add_new_definition_loop(word, definition, word_context)
+        add_new_definition_loop(word, definition, context_list)
         os.system('cls')
         print('Słowo dodano pomyślnie.')
         os.system('pause')
@@ -74,7 +78,7 @@ def add_new_word():
 
 
 def add_new_definition():
-    definition = []
+    definition = []; context_list = []
     os.system('cls')
     print('Dodaj nową definicję do istniejącego słowa')
     word = input('Podaj słowo: ')
@@ -100,11 +104,15 @@ def add_new_definition():
                 continue
             elif notEmpty != '':
                 definition.append(notEmpty)
+                context = input(f'Kontekst {i}:')
+                if context != '':
+                    context_list.append(context)
+                elif context == '':
+                    continue
             elif notEmpty == '':
                 break
             i += 1
-        word_context = input('Kontekst definicji: ')
-        add_new_definition_loop(word, definition, word_context)
+        add_new_definition_loop(word, definition, context_list)
         os.system('cls')
         print('Znaczenie dodano pomyślnie')
         os.system('pause')
@@ -241,9 +249,10 @@ def remove_word():
     os.system('pause')
 
 
-def add_new_definition_loop(word, definition, word_context):
+def add_new_definition_loop(word, definition, context_list):
     idWords = sql.cur.execute('select ID from Words where word = ?', (word,))
     idWords = idWords.fetchall()
+    count = 0
     for k in definition:
         sql.cur.execute('''INSERT INTO Definitions (
                 IDWords,
@@ -251,7 +260,8 @@ def add_new_definition_loop(word, definition, word_context):
                 VALUES (?,?)''',
                         (idWords[0][0], k))
         sql.con.commit()
-        add_context(k, word_context)
+        add_context(k, context_list[count])
+        count += 1
 
 
 def add_context(definition, word_context):
