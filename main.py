@@ -32,7 +32,8 @@ class ConnectBase:
 
 
 def add_new_word():
-    definition = []; context_list = []
+    definition = []
+    context_list = []
     os.system('cls')
     print('Dodaj nowe słowo')
     word = input('Słowo: ')
@@ -78,7 +79,8 @@ def add_new_word():
 
 
 def add_new_definition():
-    definition = []; context_list = []
+    definition = []
+    context_list = []
     os.system('cls')
     print('Dodaj nową definicję do istniejącego słowa')
     word = input('Podaj słowo: ')
@@ -217,16 +219,26 @@ def crash_test():
 def view_db():
     os.system('cls')
     print('Przegląd bazy...')
-    up = '# ID ####### Słowo ########## In English ##### Licznik ## Data Wpisu ## Data Powtórki #'
+    up = '#  ID  ############# Słowo ##################### Znaczenie ##################### Kontekst ######### Licznik ## Data Wpisu ## Data Powtórki #'
     print(up)
     a = sql.cur.execute('''
-    SELECT 
-        * 
-    FROM 
-        Words
+    SELECT
+        W.ID,
+        W.WORD,
+        D.DEFINITION,
+        C.CONTEXT_DEFINITION,
+        W.COUNTREPEATCORRECT,
+        W.CREATIONDATE,
+        W.REPEATDATE
+    FROM
+        WORDS W
+        LEFT JOIN DEFINITIONS D ON W.ID = D.IDWORDS
+        LEFT JOIN CONTEXT C ON D.ID = C.IDDEFINITIONS
+    ORDER BY
+        WORD
         ''')
     for i in a:
-        print(f'# {i[0]}  ## {i[1]}'+' '*(15-len(i[1]))+f' ## {i[2]}'+' '*(15-len(i[2]))+f' ## {i[3]}'+' '*(8-len(str(i[3])))+f' ## {i[6]} ## {i[5]}    #')
+        print(f'# {i[0]} '+' '*(4-len(str(i[0])))+f'## {i[1]} '+' '*(25-len(i[1]))+f' ## {i[2]} '+' '*(25-len(i[2]))+f' ## {i[3]} '+' '*(25-len(str(i[3])))+f' ##   {i[4]}   '+' '*(3-len(str(i[4])))+f'## {i[5]} ##  {i[6]}   #')
     print('#'*len(up))
     os.system('pause')
 
