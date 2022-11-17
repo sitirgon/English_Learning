@@ -213,23 +213,22 @@ def crash_test():
                     time.sleep(1)
                     continue
                 elif answer != i[1]:
-                    for p in range(1,3):
-                        os.system('cls')
-                        print('Odpowiedź niepoprwana, spróbuj jeszcze raz')
-                        print('Słowo:', i[0])
-                        answer_again = input('Znaczenie: ')
-                        if answer_again == i[1]:
-                            print('Odpowiedź poprawna')
-                            sql.cur.execute("UPDATE WORDS SET CRASHTEST = 'TAK' WHERE ID = ?", (i[4],))
-                            sql.con.commit()
-                            time.sleep(1)
-                            break
-                        elif answer_again != i[1]:
-                            print('Spróbuj następnym razem')
-                            sql.cur.execute("UPDATE WORDS SET CRASHTEST = 'NIE' WHERE ID = ?", (i[4],))
-                            sql.con.commit()
-                            time.sleep(1)
-                            continue
+                    os.system('cls')
+                    print('Odpowiedź niepoprwana, spróbuj jeszcze raz')
+                    print('Słowo:', i[0])
+                    answer_again = input('Znaczenie: ')
+                    if answer_again == i[1]:
+                        print('Odpowiedź poprawna')
+                        sql.cur.execute("UPDATE WORDS SET CRASHTEST = 'TAK' WHERE ID = ?", (i[4],))
+                        sql.con.commit()
+                        time.sleep(1)
+                        break
+                    elif answer_again != i[1]:
+                        print('Spróbuj następnym razem')
+                        sql.cur.execute("UPDATE WORDS SET CRASHTEST = 'NIE' WHERE ID = ?", (i[4],))
+                        sql.con.commit()
+                        time.sleep(1)
+                        continue
 
 
 
