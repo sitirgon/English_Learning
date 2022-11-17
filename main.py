@@ -48,7 +48,7 @@ def add_new_word():
                 if context != '':
                     context_list.append(context)
                 elif context == '':
-                    continue
+                    context_list.append(' ')
             elif notEmpty == '':
                 break
             i += 1
@@ -108,7 +108,7 @@ def add_new_definition():
                 if context != '':
                     context_list.append(context)
                 elif context == '':
-                    continue
+                    context_list.append(' ')
             elif notEmpty == '':
                 break
             i += 1
