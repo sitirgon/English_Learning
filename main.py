@@ -178,10 +178,22 @@ def repeat_word():
 def crash_test():
     while True:
         os.system('cls')
-        select = sql.cur.execute("SELECT word, definition, crashtest, id FROM WORDS WHERE CRASHTEST = 'NIE' ORDER BY RANDOM()")
+        select = sql.cur.execute('''
+    SELECT
+        W.WORD,
+        D.DEFINITION,
+        C.CONTEXT_DEFINITION,
+        W.CRASHTEST,
+        W.ID
+    FROM
+        WORDS W
+        LEFT JOIN DEFINITIONS D ON W.ID = D.IDWORDS
+        LEFT JOIN CONTEXT C ON D.ID = C.IDDEFINITIONS
+    ORDER BY
+        RANDOM()''')
         select = select.fetchall()
         if len(select) == 0:
-            sql.cur.execute("UPDATE WORDS SET CRASHTEST = 'TAK'")
+            sql.cur.execute("UPDATE WORDS SET CRASHTEST = 'NIE'")
             sql.con.commit()
         print('Witaj w CrashTest')
         print(f'CrashTest możesz przeprowadzić na {len(select)}')
@@ -192,28 +204,33 @@ def crash_test():
         elif count_of_select <= len(select):
             for i in select:
                 os.system('cls')
-                print('Słowo:', i[0])
-                answer = input('In English: ')
+                print('Słowo:', i[0] + ' ' * 10 + 'Kontekst:', i[2])
+                answer = input('Znaczenie: ')
                 if answer == i[1]:
                     print('Odpowiedź poprawna')
-                    sql.cur.execute("UPDATE WORDS SET CRASHTEST = 'TAK' WHERE ID = ?", (i[3],))
+                    sql.cur.execute("UPDATE WORDS SET CRASHTEST = 'TAK' WHERE ID = ?", (i[4],))
                     sql.con.commit()
                     time.sleep(1)
                     continue
                 elif answer != i[1]:
-                    while True:
+                    for p in range(1,3):
                         os.system('cls')
                         print('Odpowiedź niepoprwana, spróbuj jeszcze raz')
                         print('Słowo:', i[0])
-                        answer_again = input('In English: ')
+                        answer_again = input('Znaczenie: ')
                         if answer_again == i[1]:
                             print('Odpowiedź poprawna')
-                            sql.cur.execute("UPDATE WORDS SET CRASHTEST = 'TAK' WHERE ID = ?", (i[3],))
+                            sql.cur.execute("UPDATE WORDS SET CRASHTEST = 'TAK' WHERE ID = ?", (i[4],))
                             sql.con.commit()
                             time.sleep(1)
                             break
                         elif answer_again != i[1]:
+                            print('Spróbuj następnym razem')
+                            sql.cur.execute("UPDATE WORDS SET CRASHTEST = 'NIE' WHERE ID = ?", (i[4],))
+                            sql.con.commit()
+                            time.sleep(1)
                             continue
+
 
 
 def view_db():
