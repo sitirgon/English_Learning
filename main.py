@@ -195,6 +195,20 @@ def crash_test():
         if len(select) == 0:
             sql.cur.execute("UPDATE WORDS SET CRASHTEST = 'NIE'")
             sql.con.commit()
+            select = sql.cur.execute('''
+                SELECT
+                    W.WORD,
+                    D.DEFINITION,
+                    C.CONTEXT_DEFINITION,
+                    W.CRASHTEST,
+                    W.ID
+                FROM
+                    WORDS W
+                    LEFT JOIN DEFINITIONS D ON W.ID = D.IDWORDS
+                    LEFT JOIN CONTEXT C ON D.ID = C.IDDEFINITIONS
+                ORDER BY
+                    RANDOM()''')
+            select = select.fetchall()
         print('Witaj w CrashTest')
         print(f'CrashTest możesz przeprowadzić na {len(select)}')
         count_of_select = int(input('Wprowadź liczbe słówek: '))
