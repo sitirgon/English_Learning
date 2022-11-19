@@ -302,12 +302,12 @@ def add_new_definition_loop(word, definition, context_list):
                 VALUES (?,?)''',
                         (idWords[0][0], k))
         sql.con.commit()
-        add_context(k, context_list[count])
+        add_context(context_list[count])
         count += 1
 
 
-def add_context(definition, word_context):
-    idDefinition = sql.cur.execute('select ID from Definitions where Definition = ?', (definition,))
+def add_context(word_context):
+    idDefinition = sql.cur.execute('select ID from Definitions order by id desc limit 1')
     idDefinition = idDefinition.fetchall()
     sql.cur.execute(''' INSERT INTO Context (
                         IDDefinitions,
