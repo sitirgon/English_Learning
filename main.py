@@ -14,15 +14,15 @@ class ConnectBase:
             # base config
             self.cur.execute('''CREATE TABLE Words(
                             ID INTEGER PRIMARY KEY,
-                            Word VARCHAR(50),
-                            CountRepeatCorrect INTEGER,
-                            CrashTest VARCHAR(3),
-                            RepeatDate DATE,
-                            CreationDate DATE)''')
+                            Word VARCHAR(50))''')
             self.cur.execute('''CREATE TABLE Definitions(
                             ID INTEGER PRIMARY KEY,
                             IDWords INTEGER,
-                            Definition VARCHAR(50))''')
+                            Definition VARCHAR(50),
+                            CrashTEST VARCHAR(3),
+                            CountRepeatCorrect INTEGER,
+                            RepeatDate DATE,
+                            CreationDate DATE)''')
             self.cur.execute('''CREATE TABLE Context(
                             IDDefinitions INTEGER,
                             Context_Definition VARCHAR(50))''')
@@ -56,17 +56,11 @@ def add_new_word():
         os.system('cls')
         print('Dodaje nowe słowo...')
         time.sleep(1)
-        data_creation = date.fromtimestamp(time.time())
-        data_repeat = date.fromtimestamp(time.time() + 86_400)
         sql.cur.execute(
             '''INSERT INTO Words (
-            Word, 
-            CountRepeatCorrect, 
-            CrashTest, 
-            RepeatDate, 
-            CreationDate) 
-            VALUES (?,1,?,?,?)''',
-            (word, 'NIE', data_repeat, data_creation))
+            Word) 
+            VALUES (?)''',
+            (word,))
         sql.con.commit()
         add_new_definition_loop(word, definition, context_list)
         os.system('cls')
@@ -127,7 +121,10 @@ def add_new_definition():
 def repeat_word():
     os.system('cls')
     day = 86_400
-    select = sql.cur.execute('select Word, Definition, CountRepeatCorrect, RepeatDate, id from words order by RANDOM()')
+    select = sql.cur.execute('''
+                            select 
+                                Word, 
+                                Definition, CountRepeatCorrect, RepeatDate, id from words order by RANDOM()''')
     select = select.fetchall()
     count_word = 0
     for i in select:
@@ -178,37 +175,11 @@ def repeat_word():
 def crash_test():
     while True:
         os.system('cls')
-        select = sql.cur.execute('''
-    SELECT
-        W.WORD,
-        D.DEFINITION,
-        C.CONTEXT_DEFINITION,
-        W.CRASHTEST,
-        W.ID
-    FROM
-        WORDS W
-        LEFT JOIN DEFINITIONS D ON W.ID = D.IDWORDS
-        LEFT JOIN CONTEXT C ON D.ID = C.IDDEFINITIONS
-    ORDER BY
-        RANDOM()''')
-        select = select.fetchall()
+        select = select_sql()
         if len(select) == 0:
-            sql.cur.execute("UPDATE WORDS SET CRASHTEST = 'NIE'")
+            sql.cur.execute("UPDATE DEFINITIONS SET CRASHTEST = 'NIE'")
             sql.con.commit()
-            select = sql.cur.execute('''
-                SELECT
-                    W.WORD,
-                    D.DEFINITION,
-                    C.CONTEXT_DEFINITION,
-                    W.CRASHTEST,
-                    W.ID
-                FROM
-                    WORDS W
-                    LEFT JOIN DEFINITIONS D ON W.ID = D.IDWORDS
-                    LEFT JOIN CONTEXT C ON D.ID = C.IDDEFINITIONS
-                ORDER BY
-                    RANDOM()''')
-            select = select.fetchall()
+            continue
         print('Witaj w CrashTest')
         print(f'CrashTest możesz przeprowadzić na {len(select)}')
         count_of_select = int(input('Wprowadź liczbe słówek: '))
@@ -222,7 +193,7 @@ def crash_test():
                 answer = input('Znaczenie: ')
                 if answer == i[1]:
                     print('Odpowiedź poprawna')
-                    sql.cur.execute("UPDATE WORDS SET CRASHTEST = 'TAK' WHERE ID = ?", (i[4],))
+                    sql.cur.execute("UPDATE DEFINITIONS SET CRASHTEST = 'TAK' WHERE ID = ?", (i[4],))
                     sql.con.commit()
                     time.sleep(1)
                     continue
@@ -233,16 +204,20 @@ def crash_test():
                     answer_again = input('Znaczenie: ')
                     if answer_again == i[1]:
                         print('Odpowiedź poprawna')
-                        sql.cur.execute("UPDATE WORDS SET CRASHTEST = 'TAK' WHERE ID = ?", (i[4],))
+                        sql.cur.execute("UPDATE DEFINITIONS SET CRASHTEST = 'TAK' WHERE ID = ?", (i[4],))
                         sql.con.commit()
                         time.sleep(1)
                         break
                     elif answer_again != i[1]:
                         print('Spróbuj następnym razem')
-                        sql.cur.execute("UPDATE WORDS SET CRASHTEST = 'NIE' WHERE ID = ?", (i[4],))
+                        sql.cur.execute("UPDATE DEFINITIONS SET CRASHTEST = 'NIE' WHERE ID = ?", (i[4],))
                         sql.con.commit()
                         time.sleep(1)
                         continue
+        os.system('cls')
+        print('Wszystko powtórzyłeś')
+        os.system('pause')
+        break
 
 
 
@@ -257,9 +232,9 @@ def view_db():
         W.WORD,
         D.DEFINITION,
         C.CONTEXT_DEFINITION,
-        W.COUNTREPEATCORRECT,
-        W.CREATIONDATE,
-        W.REPEATDATE
+        D.COUNTREPEATCORRECT,
+        D.CREATIONDATE,
+        D.REPEATDATE
     FROM
         WORDS W
         LEFT JOIN DEFINITIONS D ON W.ID = D.IDWORDS
@@ -292,15 +267,21 @@ def remove_word():
 
 
 def add_new_definition_loop(word, definition, context_list):
+    data_creation = date.fromtimestamp(time.time())
+    data_repeat = date.fromtimestamp(time.time() + 86_400)
     idWords = sql.cur.execute('select ID from Words where word = ?', (word,))
     idWords = idWords.fetchall()
     count = 0
     for k in definition:
         sql.cur.execute('''INSERT INTO Definitions (
                 IDWords,
-                Definition)
-                VALUES (?,?)''',
-                        (idWords[0][0], k))
+                Definition,
+                CountRepeatCorrect, 
+                CrashTest, 
+                RepeatDate, 
+                CreationDate)
+                VALUES (?,?,1,'NIE',?,?)''',
+                        (idWords[0][0], k, data_repeat, data_creation))
         sql.con.commit()
         add_context(context_list[count])
         count += 1
@@ -316,6 +297,25 @@ def add_context(word_context):
                                 (idDefinition[0][0], word_context))
     sql.con.commit()
 
+
+def select_sql():
+    select = sql.cur.execute('''
+    SELECT
+        W.WORD,
+        D.DEFINITION,
+        C.CONTEXT_DEFINITION,
+        D.CRASHTEST,
+        D.ID
+    FROM
+        WORDS W
+        LEFT JOIN DEFINITIONS D ON W.ID = D.IDWORDS
+        LEFT JOIN CONTEXT C ON D.ID = C.IDDEFINITIONS
+    WHERE 
+        CRASHTEST = 'NIE'
+    ORDER BY
+        RANDOM()''')
+    select = select.fetchall()
+    return select
 
 def main():
     while True:
