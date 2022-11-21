@@ -49,7 +49,7 @@ def add_new_word():
                 if context != '':
                     context_list.append(context)
                 elif context == '':
-                    context_list.append(' ')
+                    context_list.append('-')
             elif notEmpty == '':
                 break
             i += 1
@@ -104,7 +104,7 @@ def add_new_definition():
                 if context != '':
                     context_list.append(context)
                 elif context == '':
-                    context_list.append(' ')
+                    context_list.append('-')
             elif notEmpty == '':
                 break
             i += 1
@@ -123,49 +123,55 @@ def repeat_word():
     day = 86_400
     select = sql.cur.execute('''
                             select 
-                                Word, 
-                                Definition, CountRepeatCorrect, RepeatDate, id from words order by RANDOM()''')
+                                w.Word, 
+                                d.Definition, 
+                                d.CountRepeatCorrect, 
+                                d.RepeatDate, 
+                                d.id,
+                                c.context_definition
+                            from 
+                                words w
+                                left join definitions d on w.id = d.idwords
+                                left join context c on c.iddefinitions = d.id
+                            where
+                                d.repeatdate <= date()
+                            order by 
+                                RANDOM()''')
     select = select.fetchall()
-    count_word = 0
-    for i in select:
-        data_repeat = datetime.datetime.strptime(i[3], '%Y-%m-%d').date()
-        if data_repeat <= date.fromtimestamp(time.time()):
-            count_word += 1
-    if count_word == 0:
+    if not select:
         print('Brak słówek do powtórki!')
         os.system('pause')
-    elif count_word > 0:
-        print('Słowa do powtórki:', count_word)
+    elif select:
+        print('Słowa do powtórki:', len(select))
         answer = input('Chcesz zacząć powtórke? (tak/nie) ')
         if answer == 'tak':
             for i in select:
-                data_repeat = datetime.datetime.strptime(i[3], '%Y-%m-%d').date()
-                if data_repeat <= date.fromtimestamp(time.time()):
-                    os.system('cls')
-                    print('Słowo:', i[0])
-                    repeat_answer = input('In English: ')
-                    if repeat_answer == i[1]:
-                        print('Odpowiedź poprawna')
-                        sql.cur.execute('update words set RepeatDate = ?, CountRepeatCorrect = ? where id = ?',
-                                        (date.fromtimestamp(time.time() + (day * (i[2] + 1))), i[2] + 1, i[4]))
-                        sql.con.commit()
-                        time.sleep(1)
-                        continue
-                    elif repeat_answer != i[1]:
-                        while True:
-                            os.system('cls')
-                            print('Odpowiedz niepoprawna, spróbuj jeszcze raz')
-                            print('Słowo:', i[0])
-                            repeat_answer_second = input('In English: ')
-                            if repeat_answer_second == i[1]:
-                                print('Odpowiedź poprawna')
-                                sql.cur.execute('update words set RepeatDate = ?, CountRepeatCorrect = ? where id = ?',
-                                                (date.fromtimestamp(time.time() + day) , 1, i[4]))
-                                sql.con.commit()
-                                time.sleep(1)
-                                break
-                            elif repeat_answer_second != i[1]:
-                                continue
+                os.system('cls')
+                print('Słowo:', i[0] +' '*10+'Kontekst:', i[5])
+                repeat_answer = input('In English: ')
+                if repeat_answer == i[1]:
+                    print('Odpowiedź poprawna')
+                    sql.cur.execute('update definitions set RepeatDate = ?, CountRepeatCorrect = ? where id = ?',
+                                    (date.fromtimestamp(time.time() + (day * (i[2]))), i[2] + 1, i[4]))
+                    sql.con.commit()
+                    time.sleep(1)
+                    continue
+                elif repeat_answer != i[1]:
+                    while True:
+                        os.system('cls')
+                        print('Odpowiedz niepoprawna, spróbuj jeszcze raz')
+                        print('Słowo:', i[0] +' '*10+'Kontekst:', i[5])
+                        repeat_answer_second = input('In English: ')
+                        if repeat_answer_second == i[1]:
+                            print('Odpowiedź poprawna')
+                            sql.cur.execute('update definitions set RepeatDate = ?, CountRepeatCorrect = ? where id = ?',
+                                            (date.fromtimestamp(time.time() + day) , 1, i[4]))
+                            sql.con.commit()
+                            time.sleep(1)
+                            break
+                        elif repeat_answer_second != i[1]:
+                            continue
+            os.system('cls')
             print('To wszystko')
             os.system('pause')
         elif answer == 'nie':
@@ -175,49 +181,50 @@ def repeat_word():
 def crash_test():
     while True:
         os.system('cls')
-        select = select_sql()
-        if len(select) == 0:
-            sql.cur.execute("UPDATE DEFINITIONS SET CRASHTEST = 'NIE'")
-            sql.con.commit()
-            continue
-        print('Witaj w CrashTest')
-        print(f'CrashTest możesz przeprowadzić na {len(select)}')
-        count_of_select = int(input('Wprowadź liczbe słówek: '))
-        if count_of_select > len(select):
-            print('\nWprowadzono za dużą liczbę!')
-            continue
-        elif count_of_select <= len(select):
-            for i in select:
-                os.system('cls')
-                print('Słowo:', i[0] + ' ' * 10 + 'Kontekst:', i[2])
-                answer = input('Znaczenie: ')
-                if answer == i[1]:
-                    print('Odpowiedź poprawna')
-                    sql.cur.execute("UPDATE DEFINITIONS SET CRASHTEST = 'TAK' WHERE ID = ?", (i[4],))
-                    sql.con.commit()
-                    time.sleep(1)
-                    continue
-                elif answer != i[1]:
+        answer = input('Chcesz zacząć powtórke? (tak/nie) ')
+        if answer == 'tak':
+            select = select_sql()
+            if len(select) == 0:
+                sql.cur.execute("UPDATE DEFINITIONS SET CRASHTEST = 'NIE'")
+                sql.con.commit()
+                continue
+            os.system('cls')
+            print('Witaj w CrashTest')
+            print(f'CrashTest możesz przeprowadzić na {len(select)}')
+            count_of_select = int(input('Wprowadź liczbe słówek: '))
+            if count_of_select > len(select):
+                print('\nWprowadzono za dużą liczbę!')
+                continue
+            elif count_of_select <= len(select):
+                for i in select:
                     os.system('cls')
-                    print('Odpowiedź niepoprwana, spróbuj jeszcze raz')
-                    print('Słowo:', i[0])
-                    answer_again = input('Znaczenie: ')
-                    if answer_again == i[1]:
+                    print('Słowo:', i[0] + ' ' * 10 + 'Kontekst:', i[2])
+                    answer = input('Znaczenie: ')
+                    if answer == i[1]:
                         print('Odpowiedź poprawna')
                         sql.cur.execute("UPDATE DEFINITIONS SET CRASHTEST = 'TAK' WHERE ID = ?", (i[4],))
                         sql.con.commit()
                         time.sleep(1)
-                        break
-                    elif answer_again != i[1]:
-                        print('Spróbuj następnym razem')
-                        sql.cur.execute("UPDATE DEFINITIONS SET CRASHTEST = 'NIE' WHERE ID = ?", (i[4],))
-                        sql.con.commit()
-                        time.sleep(1)
                         continue
-        os.system('cls')
-        print('Wszystko powtórzyłeś')
-        os.system('pause')
-        break
+                    elif answer != i[1]:
+                        os.system('cls')
+                        print('Odpowiedź niepoprwana, spróbuj jeszcze raz')
+                        print('Słowo:', i[0])
+                        answer_again = input('Znaczenie: ')
+                        if answer_again == i[1]:
+                            print('Odpowiedź poprawna')
+                            sql.cur.execute("UPDATE DEFINITIONS SET CRASHTEST = 'TAK' WHERE ID = ?", (i[4],))
+                            sql.con.commit()
+                            time.sleep(1)
+                            break
+                        elif answer_again != i[1]:
+                            print('Spróbuj następnym razem')
+                            sql.cur.execute("UPDATE DEFINITIONS SET CRASHTEST = 'NIE' WHERE ID = ?", (i[4],))
+                            sql.con.commit()
+                            time.sleep(1)
+                            continue
+        elif answer == 'nie':
+            break
 
 
 
