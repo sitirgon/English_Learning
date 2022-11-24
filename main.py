@@ -7,7 +7,12 @@ from datetime import date
 
 class ConnectBase:
     def __init__(self):
-        self.con = sqlite3.connect('Dict.db')
+        self.path_documents = os.path.expanduser('~\Documents\Słownik')
+        try:
+            os.mkdir(self.path_documents)
+        except:
+            pass
+        self.con = sqlite3.connect(self.path_documents+'\\Dict.db')
         self.cur = self.con.cursor()
         self.cur_update = self.con.cursor()
         try:
@@ -179,15 +184,15 @@ def repeat_word():
 
 
 def crash_test():
+    select = select_sql()
+    if len(select) == 0:
+        sql.cur.execute("UPDATE DEFINITIONS SET CRASHTEST = 'NIE'")
+        sql.con.commit()
     while True:
         os.system('cls')
         answer = input('Chcesz zacząć powtórke? (tak/nie) ')
         if answer == 'tak':
             select = select_sql()
-            if len(select) == 0:
-                sql.cur.execute("UPDATE DEFINITIONS SET CRASHTEST = 'NIE'")
-                sql.con.commit()
-                continue
             os.system('cls')
             print('Witaj w CrashTest')
             print(f'CrashTest możesz przeprowadzić na {len(select)}')
@@ -225,6 +230,10 @@ def crash_test():
                             continue
         elif answer == 'nie':
             break
+        os.system('cls')
+        print('To wszystko')
+        os.system('pause')
+        break
 
 
 
@@ -362,6 +371,5 @@ def main():
 if __name__ == '__main__':
     sql = ConnectBase()
     main()
-
 
 
