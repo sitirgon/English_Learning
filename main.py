@@ -199,6 +199,7 @@ def crash_test():
             count_of_select = int(input('Wprowadź liczbe słówek: '))
             if count_of_select > len(select):
                 print('\nWprowadzono za dużą liczbę!')
+                os.system('pause')
                 continue
             elif count_of_select <= len(select):
                 for i in select:
