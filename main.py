@@ -1,8 +1,8 @@
-import datetime
 import sqlite3
 import os
 import time
 from datetime import date
+from tabulate import tabulate
 
 
 class ConnectBase:
@@ -124,6 +124,15 @@ def add_new_definition():
 
 
 def repeat_word():
+    sql.cur.execute('''
+    UPDATE
+    DEFINITIONS
+    SET 
+    COUNTREPEATCORRECT = 1
+    WHERE
+    REPEATDATE <= DATE('NOW','-2 DAY')
+    ''')
+    sql.con.commit()
     os.system('cls')
     day = 86_400
     select = sql.cur.execute('''
@@ -153,7 +162,7 @@ def repeat_word():
             for i in select:
                 os.system('cls')
                 print('Słowo:', i[0] +' '*10+'Kontekst:', i[5])
-                repeat_answer = input('In English: ')
+                repeat_answer = input('Znaczenie: ')
                 if repeat_answer == i[1]:
                     print('Odpowiedź poprawna')
                     sql.cur.execute('update definitions set RepeatDate = ?, CountRepeatCorrect = ? where id = ?',
@@ -166,7 +175,7 @@ def repeat_word():
                         os.system('cls')
                         print('Odpowiedz niepoprawna, spróbuj jeszcze raz')
                         print('Słowo:', i[0] +' '*10+'Kontekst:', i[5])
-                        repeat_answer_second = input('In English: ')
+                        repeat_answer_second = input('Znaczenie: ')
                         if repeat_answer_second == i[1]:
                             print('Odpowiedź poprawna')
                             sql.cur.execute('update definitions set RepeatDate = ?, CountRepeatCorrect = ? where id = ?',
@@ -241,8 +250,7 @@ def crash_test():
 def view_db():
     os.system('cls')
     print('Przegląd bazy...')
-    up = '#  ID  ############# Słowo ##################### Znaczenie ##################### Kontekst ######### Licznik ## Data Wpisu ## Data Powtórki #'
-    print(up)
+    headers = ['ID', 'Słowo', 'Znaczenoe', 'Kontekst', 'Licznik', 'Data Wpisu', 'Data Powtórki']
     a = sql.cur.execute('''
     SELECT
         W.ID,
@@ -259,9 +267,8 @@ def view_db():
     ORDER BY
         WORD
         ''')
-    for i in a:
-        print(f'# {i[0]} '+' '*(4-len(str(i[0])))+f'## {i[1]} '+' '*(25-len(i[1]))+f' ## {i[2]} '+' '*(25-len(i[2]))+f' ## {i[3]} '+' '*(25-len(str(i[3])))+f' ##   {i[4]}   '+' '*(3-len(str(i[4])))+f'## {i[5]} ##  {i[6]}   #')
-    print('#'*len(up))
+    table = a.fetchall()
+    print(tabulate(table, headers, tablefmt='grid'))
     os.system('pause')
 
 
