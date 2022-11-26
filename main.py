@@ -211,7 +211,11 @@ def crash_test():
                 os.system('pause')
                 continue
             elif count_of_select <= len(select):
+                count = 0
                 for i in select:
+                    count += 1
+                    if count > count_of_select:
+                        break
                     os.system('cls')
                     print('Słowo:', i[0] + ' ' * 10 + 'Kontekst:', i[2])
                     answer = input('Znaczenie: ')
@@ -231,7 +235,7 @@ def crash_test():
                             sql.cur.execute("UPDATE DEFINITIONS SET CRASHTEST = 'TAK' WHERE ID = ?", (i[4],))
                             sql.con.commit()
                             time.sleep(1)
-                            break
+                            continue
                         elif answer_again != i[1]:
                             print('Spróbuj następnym razem')
                             sql.cur.execute("UPDATE DEFINITIONS SET CRASHTEST = 'NIE' WHERE ID = ?", (i[4],))
