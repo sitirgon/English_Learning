@@ -166,7 +166,7 @@ def repeat_word():
                 if repeat_answer == i[1]:
                     print('Odpowiedź poprawna')
                     sql.cur.execute('update definitions set RepeatDate = ?, CountRepeatCorrect = ? where id = ?',
-                                    (date.fromtimestamp(time.time() + (day * (i[2]))), i[2] + 1, i[4]))
+                                    (date.fromtimestamp(time.time() + (day * ((i[2])+1))), i[2] + 1, i[4]))
                     sql.con.commit()
                     time.sleep(1)
                     continue
@@ -254,7 +254,7 @@ def crash_test():
 def view_db():
     os.system('cls')
     print('Przegląd bazy...')
-    headers = ['ID', 'Słowo', 'Znaczenoe', 'Kontekst', 'Licznik', 'Data Wpisu', 'Data Powtórki']
+    headers = ['ID', 'Słowo', 'Znaczenie', 'Kontekst', 'Licznik', 'Data Wpisu', 'Data Powtórki']
     a = sql.cur.execute('''
     SELECT
         W.ID,
