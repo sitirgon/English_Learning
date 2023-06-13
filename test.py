@@ -118,7 +118,7 @@ def repeat_word():
     UPDATE
     words
     SET 
-    COUNTREPEATCORRECT = 1
+    COUNTREPEATCORRECT = 0
     WHERE
     REPEATDATE <= DATE('NOW','-2 DAY')
     ''')
