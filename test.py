@@ -176,7 +176,7 @@ def repeat_word():
                         while True:
                             try_score += 1
                             print('Odpowiedz niepoprawna, spróbuj jeszcze raz')
-                            repeat_answer_second = input('Znaczenie: ')
+                            repeat_answer_second = input(f'Znaczenie (podpowiedź {definition_word[0][0][0:try_score-1]}): ')
                             for definition_check in definition_word:
                                 if repeat_answer_second == definition_check[0]:
                                     correct_definitions += 1
@@ -254,7 +254,7 @@ def crash_test():
                             while True:
                                 try_score += 1
                                 print('Odpowiedz niepoprawna, spróbuj jeszcze raz')
-                                repeat_answer_second = input('Znaczenie: ')
+                                repeat_answer_second = input(f'Znaczenie (podpowiedź {definition_word[0][0][0:try_score-1]}): ')
                                 for definition_check in definition_word:
                                     if repeat_answer_second == definition_check[0]:
                                         correct_definitions += 1
